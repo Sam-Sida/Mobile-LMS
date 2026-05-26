@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a237e">
+  <meta name="description" content="Mobile Training Library - Browse and complete courses on the go">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mobile LMS">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Mobile LMS - Training Library</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-content">
+      <h1 class="logo">Mobile LMS</h1>
+      <button class="menu-btn" id="menuBtn" aria-label="Open filters">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="4" y1="6" x2="20" y2="6"></line>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="18" x2="20" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="search-bar">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="search" id="searchInput" placeholder="Search courses..." autocomplete="off">
+    </div>
+  </header>
+
+  <!-- Filter drawer (slides in from left on mobile) -->
+  <div class="filter-overlay" id="filterOverlay"></div>
+  <aside class="filter-drawer" id="filterDrawer">
+    <div class="drawer-header">
+      <h2>Filters</h2>
+      <button class="close-drawer" id="closeDrawer" aria-label="Close filters">&times;</button>
+    </div>
+    <div class="filter-group">
+      <h3>Category</h3>
+      <div class="filter-options" id="categoryFilters"></div>
+    </div>
+    <div class="filter-group">
+      <h3>Level</h3>
+      <div class="filter-options" id="levelFilters"></div>
+    </div>
+    <div class="filter-group">
+      <h3>Duration</h3>
+      <div class="filter-options" id="durationFilters"></div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-reset" id="resetFilters">Reset All</button>
+      <button class="btn-apply" id="applyFilters">Show Results</button>
+    </div>
+  </aside>
+
+  <!-- Filter chips (visible when filters active) -->
+  <div class="filter-chips" id="filterChips"></div>
+
+  <!-- Main content -->
+  <main class="course-grid" id="courseGrid"></main>
+
+  <!-- Empty state -->
+  <div class="empty-state" id="emptyState" hidden>
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" stroke-width="1.5">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <p>No courses match your filters.</p>
+    <button class="btn-reset" id="clearAll">Clear filters</button>
+  </div>
+
+  <!-- Course detail modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="courseModal">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <div class="modal-hero" id="modalHero"></div>
+      <div class="modal-body">
+        <div class="modal-badges" id="modalBadges"></div>
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <p class="modal-desc" id="modalDesc"></p>
+        <div class="module-list" id="moduleList"></div>
+        <button class="btn-enroll" id="enrollBtn">Start Course</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <a href="#" class="nav-item active" data-tab="library">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+      <span>Library</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="my-courses">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+        <path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"></path>
+      </svg>
+      <span>My Courses</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="profile">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <!-- Install banner -->
+  <div class="install-banner" id="installBanner" hidden>
+    <p>Install this app for offline access</p>
+    <button class="btn-install" id="installBtn">Install</button>
+    <button class="btn-dismiss" id="dismissInstall">&times;</button>
+  </div>
+
+  <script src="courses.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
