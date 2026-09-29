@@ -192,8 +192,46 @@
   function toggleModule(courseId, moduleIndex) {
     if (!state.completed[courseId]) state.completed[courseId] = [];
     const idx = state.completed[courseId].indexOf(moduleIndex);
-    if (idx > -1) state.completed[courseId].splice(idx, 1);
-    else state.completed[courseId].push(moduleIndex);
+    if (idx > -1) {
+      state.completed[courseId].splice(idx, 1);
+    } else {
+      state.completed[courseId].push(moduleIndex);
+
+      // Track module completion
+      var course = COURSES.find(function (c) { return c.id === courseId; });
+      if (typeof pendo !== "undefined" && course) {
+        var totalModules = course.modules.length;
+        var completedModules = state.completed[courseId].length;
+        var progressPercent = Math.round((completedModules / totalModules) * 100);
+        pendo.track("module_completed", {
+          courseId: String(courseId),
+          courseTitle: course.title,
+          courseCategory: course.category,
+          moduleIndex: moduleIndex,
+          moduleName: course.modules[moduleIndex] ? course.modules[moduleIndex].name : "",
+          moduleDuration: course.modules[moduleIndex] ? course.modules[moduleIndex].duration : "",
+          completedModules: completedModules,
+          totalModules: totalModules,
+          courseProgressPercent: progressPercent
+        });
+
+        // Track course completion when all modules are done
+        if (completedModules === totalModules) {
+          pendo.track("course_completed", {
+            courseId: String(courseId),
+            courseTitle: course.title,
+            courseCategory: course.category,
+            courseLevel: course.level,
+            courseDuration: course.duration,
+            moduleCount: totalModules,
+            totalEnrolledCourses: Object.keys(state.enrolled).length,
+            totalCompletedCourses: COURSES.filter(function (c) {
+              return (state.completed[c.id] || []).length === c.modules.length;
+            }).length
+          });
+        }
+      }
+    }
     saveState(state);
     openModal(courseId);
     renderCourses();
@@ -205,6 +243,20 @@
     if (!state.completed[courseId]) state.completed[courseId] = [];
     if (state.completed[courseId].length === 0) state.completed[courseId].push(0);
     saveState(state);
+
+    // Track course enrollment
+    var course = COURSES.find(function (c) { return c.id === courseId; });
+    if (typeof pendo !== "undefined" && course) {
+      pendo.track("course_enrolled", {
+        courseId: String(courseId),
+        courseTitle: course.title,
+        courseCategory: course.category,
+        courseLevel: course.level,
+        courseDuration: course.duration,
+        moduleCount: course.modules.length
+      });
+    }
+
     openModal(courseId);
     renderCourses();
     renderMyCourses();
@@ -335,6 +387,20 @@
       state.filters = getActiveFilters();
       saveState(state);
       renderCourses();
+
+      // Track filters applied
+      if (typeof pendo !== "undefined") {
+        var filters = state.filters;
+        var totalSelected = Object.values(filters).reduce(function (s, a) { return s + a.length; }, 0);
+        pendo.track("course_filters_applied", {
+          categoryFilters: (filters.category || []).join(", "),
+          levelFilters: (filters.level || []).join(", "),
+          durationFilters: (filters.duration || []).join(", "),
+          totalFiltersSelected: totalSelected,
+          resultsCount: filterCourses().length
+        });
+      }
+
       closeDrawer();
     });
 
@@ -363,7 +429,27 @@
       renderCourses();
     });
 
-    searchInput.addEventListener("input", renderCourses);
+    var searchDebounceTimer = null;
+    searchInput.addEventListener("input", function () {
+      renderCourses();
+
+      // Debounce search tracking (500ms after user stops typing)
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(function () {
+        var query = searchInput.value.trim();
+        if (query && typeof pendo !== "undefined") {
+          var results = filterCourses();
+          var activeFilters = getActiveFilters();
+          var filtersCount = Object.values(activeFilters).reduce(function (s, a) { return s + a.length; }, 0);
+          pendo.track("course_search_executed", {
+            searchQuery: query,
+            resultsCount: results.length,
+            totalCourses: COURSES.length,
+            activeFiltersCount: filtersCount
+          });
+        }
+      }, 500);
+    });
 
     courseGrid.addEventListener("click", (e) => {
       const card = e.target.closest(".course-card");
@@ -400,7 +486,16 @@
     $("#installBtn").addEventListener("click", async () => {
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
+      const choiceResult = await deferredPrompt.userChoice;
+
+      // Track PWA install prompt response
+      if (typeof pendo !== "undefined") {
+        pendo.track("pwa_install_accepted", {
+          userChoice: choiceResult.outcome,
+          platform: navigator.platform || "unknown"
+        });
+      }
+
       deferredPrompt = null;
       $("#installBanner").hidden = true;
     });
