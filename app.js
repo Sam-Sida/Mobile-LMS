@@ -28,6 +28,12 @@
   const DURATIONS = ["Under 30 min", "30-60 min", "Over 60 min"];
 
   function init() {
+    pendo.initialize({
+      visitor: {
+        id: ''
+      }
+    });
+
     renderFilterOptions("categoryFilters", CATEGORIES, "category");
     renderFilterOptions("levelFilters", LEVELS, "level");
     renderFilterOptions("durationFilters", DURATIONS, "duration");
